@@ -1,0 +1,2914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duolingo Persona Engagement Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #58cc02 0%, #89e219 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .dashboard {
+            width: 100%;
+            max-width: 1200px;
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            position: relative;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #1a1a1a;
+            margin-bottom: 30px;
+            font-size: 32px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        h2 {
+            margin: 0;
+        }
+        
+        .duo-icon {
+            font-size: 40px;
+        }
+        
+        h2 .duo-icon {
+            font-size: 30px;
+        }
+        
+        .hover-hint {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 35px auto 30px;
+            padding: 18px 30px;
+            background: linear-gradient(135deg, #fff9e6 0%, #ffe4b5 100%);
+            border: 2px solid #ffc107;
+            border-radius: 50px;
+            max-width: 500px;
+            box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+            animation: pulse 2s ease-in-out infinite;
+            position: relative;
+        }
+        
+        .hover-hint::after {
+            content: '▼';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ffc107;
+            font-size: 16px;
+            animation: arrowBounce 1s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+            }
+            50% {
+                transform: scale(1.02);
+                box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
+            }
+        }
+        
+        @keyframes arrowBounce {
+            0%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            50% {
+                transform: translateX(-50%) translateY(3px);
+            }
+        }
+        
+        .hint-icon {
+            font-size: 24px;
+            animation: bounce 1s ease-in-out infinite;
+            filter: drop-shadow(0 0 5px rgba(255, 193, 7, 0.5));
+        }
+        
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            25% {
+                transform: translateY(-3px) rotate(-5deg);
+            }
+            75% {
+                transform: translateY(-3px) rotate(5deg);
+            }
+        }
+        
+        .hint-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-style: normal;
+            letter-spacing: 0.3px;
+        }
+        
+        /* Business Value Bubble Chart Styles */
+        .bubble-chart-section {
+            margin: 40px 0;
+            padding: 35px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 16px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .bubble-title {
+            font-size: 22px;
+            color: #2c3e50;
+            margin: 0 0 30px 0;
+            font-weight: 700;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .bubble-chart-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .bubble-chart-wrapper {
+            position: relative;
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        #bubbleChart {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .grid-lines line {
+            stroke: #e0e0e0;
+            stroke-width: 1;
+            stroke-dasharray: 3, 3;
+        }
+        
+        .axes line {
+            stroke: #666;
+            stroke-width: 2;
+        }
+        
+        .axis-labels text {
+            font-size: 12px;
+            fill: #666;
+            font-weight: 500;
+        }
+        
+        .bubble {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: bubbleFadeIn 0.8s ease-out;
+            animation-fill-mode: both;
+        }
+        
+        @keyframes bubbleFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .bubble:nth-child(1) { animation-delay: 0.1s; }
+        .bubble:nth-child(2) { animation-delay: 0.3s; }
+        .bubble:nth-child(3) { animation-delay: 0.5s; }
+        .bubble:nth-child(4) { animation-delay: 0.7s; }
+        
+        .bubble:hover {
+            filter: brightness(1.1);
+            transform: scale(1.1);
+        }
+        
+        .bubble-circle {
+            fill-opacity: 0.5;
+            stroke-width: 3;
+            transition: all 0.3s ease;
+        }
+        
+        .bubble:hover .bubble-circle {
+            fill-opacity: 0.7;
+            stroke-width: 4;
+        }
+        
+        .bubble-image {
+            pointer-events: none;
+        }
+        
+        .axis-title-x {
+            position: absolute;
+            bottom: 10px;
+            right: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .axis-title-y {
+            position: absolute;
+            top: 40px;
+            left: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #495057;
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+        }
+        
+        /* Methods Summary Styles */
+        .methods-summary {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 16px;
+            padding: 30px;
+            margin: 30px 0;
+            border-left: 4px solid #58cc02;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            animation: fadeIn 0.8s ease-in;
+            transition: box-shadow 0.3s ease;
+        }
+        
+        .methods-summary:hover {
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .methods-title {
+            font-size: 22px;
+            color: #2c3e50;
+            margin: 0 0 20px 0;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .methods-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .method-item {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 12px;
+            transition: background 0.3s ease;
+        }
+        
+        .method-item:hover {
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .method-number {
+            background: #58cc02;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        
+        .method-text {
+            flex: 1;
+            line-height: 1.6;
+            color: #495057;
+            font-size: 15px;
+        }
+        
+        .method-text strong {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .method-text em {
+            font-style: italic;
+            color: #58cc02;
+            font-weight: 500;
+        }
+        
+        /* Personas Description Section */
+        .personas-description {
+            margin: 30px 0;
+        }
+        
+        .personas-desc-title {
+            font-size: 22px;
+            color: #2c3e50;
+            margin: 0 0 25px 0;
+            font-weight: 700;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .personas-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        
+        .persona-card {
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+            animation: slideUp 0.6s ease-out;
+            animation-fill-mode: both;
+            min-height: 280px;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .persona-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+            border-color: #58cc02;
+        }
+        
+        .persona-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .persona-card-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            object-fit: cover;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .persona-card-emoji {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #58cc02, #89e219);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .persona-card-title {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .persona-card-title h3 {
+            margin: 0;
+            font-size: 16px;
+            color: #2c3e50;
+            font-weight: 700;
+        }
+        
+        .persona-badge {
+            background: linear-gradient(135deg, #58cc02, #4caf50);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+        
+        .persona-card-content {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .persona-section {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #495057;
+        }
+        
+        .persona-section strong {
+            color: #2c3e50;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 2px;
+        }
+        
+        /* Highlight different personas with subtle colors */
+        .persona-card:nth-child(1) {
+            background: linear-gradient(135deg, #ffffff 0%, #fff5f5 100%);
+            animation-delay: 0.1s;
+        }
+        
+        .persona-card:nth-child(1) .persona-badge {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        }
+        
+        .persona-card:nth-child(2) {
+            background: linear-gradient(135deg, #ffffff 0%, #f0fffe 100%);
+            animation-delay: 0.2s;
+        }
+        
+        .persona-card:nth-child(2) .persona-badge {
+            background: linear-gradient(135deg, #4ecdc4, #44a8a0);
+        }
+        
+        .persona-card:nth-child(3) {
+            background: linear-gradient(135deg, #ffffff 0%, #fffef5 100%);
+            animation-delay: 0.3s;
+        }
+        
+        .persona-card:nth-child(3) .persona-badge {
+            background: linear-gradient(135deg, #ffd93d, #f0b90b);
+        }
+        
+        .persona-card:nth-child(4) {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f7ff 100%);
+            animation-delay: 0.4s;
+        }
+        
+        .persona-card:nth-child(4) .persona-badge {
+            background: linear-gradient(135deg, #6c5ce7, #574b90);
+        }
+        
+        .persona-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 35px;
+        }
+        
+        .persona-row {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f6f9fc 0%, #e9ecef 100%);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .persona-row::after {
+            content: '📊';
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .persona-row:hover {
+            transform: translateX(5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            border-color: #58cc02;
+            z-index: 5;
+        }
+        
+        .persona-row:hover::after {
+            opacity: 0.6;
+        }
+        
+        .persona-image-container {
+            position: relative;
+            margin-right: 30px;
+            flex-shrink: 0;
+            width: 100px;
+        }
+        
+        .persona-image {
+            width: 90px;
+            height: 90px;
+            border-radius: 20px;
+            object-fit: cover;
+            box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.15);
+            background: white;
+            padding: 5px;
+        }
+        
+        /* Fallback if images don't load */
+        .persona-image.placeholder {
+            background: linear-gradient(135deg, #58cc02, #89e219);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: white;
+        }
+        
+        .persona-label {
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #2c3e50;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            white-space: nowrap;
+            border: 2px solid #58cc02;
+        }
+        
+        .persona-percentage {
+            position: absolute;
+            top: -10px;
+            right: -5px;
+            background: linear-gradient(135deg, #58cc02, #4caf50);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .metrics-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .metric-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .metric-label {
+            min-width: 120px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .metric-icon {
+            width: 16px;
+            height: 16px;
+            opacity: 0.7;
+        }
+        
+        .bar-background {
+            flex: 1;
+            height: 26px;
+            background: #e9ecef;
+            border-radius: 13px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+        }
+        
+        .bar-fill {
+            height: 100%;
+            border-radius: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+            transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .bar-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: translateX(-100%);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            100% {
+                transform: translateX(100%);
+            }
+        }
+        
+        .bar-fill.active {
+            background: linear-gradient(90deg, #4c6ef5 0%, #5c7cfa 100%);
+        }
+        
+        .bar-fill.streak {
+            background: linear-gradient(90deg, #fa5252 0%, #fd7e14 100%);
+        }
+        
+        .bar-fill.lessons {
+            background: linear-gradient(90deg, #fab005 0%, #fd7e14 100%);
+        }
+        
+        .bar-value {
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+        
+        /* Key Insights Section Styles */
+        .insights-section {
+            margin: 40px 0;
+            padding: 35px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 16px;
+            border: 2px solid #e9ecef;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .insights-title {
+            font-size: 22px;
+            color: #2c3e50;
+            margin: 0 0 30px 0;
+            font-weight: 700;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .baseline-indicator {
+            background: linear-gradient(135deg, #58cc02 0%, #89e219 100%);
+            border-radius: 50px;
+            padding: 15px 30px;
+            margin: 0 auto 35px;
+            max-width: 400px;
+            box-shadow: 0 4px 15px rgba(88, 204, 2, 0.3);
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 4px 15px rgba(88, 204, 2, 0.3);
+            }
+            50% {
+                box-shadow: 0 6px 20px rgba(88, 204, 2, 0.5);
+            }
+        }
+        
+        .baseline-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .baseline-label {
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .baseline-value {
+            background: white;
+            color: #58cc02;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        .insights-chart-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .insight-row {
+            display: flex;
+            align-items: center;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            animation: slideIn 0.6s ease-out;
+            animation-fill-mode: both;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .insight-row:nth-child(1) { animation-delay: 0.1s; }
+        .insight-row:nth-child(2) { animation-delay: 0.2s; }
+        .insight-row:nth-child(3) { animation-delay: 0.3s; }
+        
+        .insight-row:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+            border-color: #58cc02;
+        }
+        
+        .insight-label {
+            min-width: 200px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-right: 20px;
+        }
+        
+        .insight-icon {
+            font-size: 24px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        }
+        
+        .insight-text {
+            font-size: 15px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .insight-bars {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .bar-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .bar-wrapper {
+            position: relative;
+            height: 32px;
+            background: #f0f0f0;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        
+        .bar-wrapper.without {
+            background: #ffe8e8;
+        }
+        
+        .bar-wrapper.with {
+            background: #e8f5e9;
+        }
+        
+        .insight-bar {
+            height: 100%;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 12px;
+            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .without-bar {
+            background: linear-gradient(90deg, #ff8a80 0%, #ff5252 100%);
+        }
+        
+        .with-bar {
+            background: linear-gradient(90deg, #69f0ae 0%, #4caf50 100%);
+        }
+        
+        .insight-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transform: translateX(-100%);
+            animation: shimmer 2.5s infinite;
+            animation-delay: 1.5s;
+        }
+        
+        .bar-label {
+            color: white;
+            font-size: 13px;
+            font-weight: 700;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            white-space: nowrap;
+            z-index: 1;
+        }
+        
+        .increase-indicator {
+            min-width: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+            padding: 8px 16px;
+            border-radius: 20px;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+            animation: bounceIn 0.8s ease-out;
+            animation-delay: 1.8s;
+            animation-fill-mode: both;
+        }
+        
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+            70% {
+                transform: scale(0.95);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        .increase-arrow {
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            animation: arrowPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes arrowPulse {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-2px);
+            }
+        }
+        
+        .increase-value {
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
+        }
+        
+        /* Impact Analysis Cards */
+        .insights-summary {
+            margin-top: 40px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            border-left: 4px solid #58cc02;
+        }
+        
+        .insights-summary h3 {
+            margin: 0 0 20px 0;
+            color: #2c3e50;
+            font-size: 18px;
+            font-weight: 700;
+            text-align: center;
+        }
+        
+        .impact-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        
+        .impact-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            animation: fadeInUp 0.6s ease-out;
+            animation-fill-mode: both;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .impact-card.highest {
+            animation-delay: 0.3s;
+            border-color: #ffd700;
+            background: linear-gradient(135deg, #ffffff 0%, #fffef5 100%);
+        }
+        
+        .impact-card.moderate {
+            animation-delay: 0.4s;
+            border-color: #c0c0c0;
+            background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+        }
+        
+        .impact-card.lowest {
+            animation-delay: 0.5s;
+            border-color: #cd7f32;
+            background: linear-gradient(135deg, #ffffff 0%, #fff8f5 100%);
+        }
+        
+        .impact-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+        
+        .impact-icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+        
+        .impact-content {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .impact-title {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .impact-factor {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 5px 0;
+        }
+        
+        .impact-stat {
+            font-size: 14px;
+            color: #4caf50;
+            font-weight: 600;
+        }
+        
+        /* Recommended Actions Section Styles */
+        .actions-section {
+            margin: 40px 0;
+            padding: 35px;
+            background: linear-gradient(135deg, #fff5e6 0%, #ffe8cc 100%);
+            border-radius: 16px;
+            border: 2px solid #ffc107;
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.15);
+        }
+        
+        .actions-title {
+            font-size: 22px;
+            color: #2c3e50;
+            margin: 0 0 30px 0;
+            font-weight: 700;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .actions-container {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        .action-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid #58cc02;
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            transition: all 0.3s ease;
+            animation: slideInAction 0.6s ease-out;
+            animation-fill-mode: both;
+        }
+        
+        @keyframes slideInAction {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .action-card:nth-child(1) { animation-delay: 0.1s; }
+        .action-card:nth-child(2) { animation-delay: 0.2s; }
+        .action-card:nth-child(3) { animation-delay: 0.3s; }
+        
+        .action-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+        
+        .action-number {
+            background: linear-gradient(135deg, #58cc02 0%, #4caf50 100%);
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 700;
+            flex-shrink: 0;
+            box-shadow: 0 3px 10px rgba(88, 204, 2, 0.3);
+        }
+        
+        .action-content {
+            flex: 1;
+        }
+        
+        .action-heading {
+            margin: 0 0 10px 0;
+            font-size: 17px;
+            color: #2c3e50;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+        
+        .action-description {
+            margin: 0 0 15px 0;
+            color: #495057;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        
+        /* Action Metrics */
+        .action-metrics {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .metric-badge {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #4caf50;
+        }
+        
+        .metric-label {
+            font-size: 12px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .metric-value {
+            font-size: 16px;
+            color: #4caf50;
+            font-weight: 700;
+        }
+        
+        /* Action Impact Visual */
+        .action-impact {
+            margin-top: 15px;
+        }
+        
+        .impact-visual {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 8px;
+        }
+        
+        .impact-before, .impact-after {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .impact-label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .impact-bar {
+            height: 30px;
+            border-radius: 15px;
+            background: linear-gradient(90deg, #ff8a80 0%, #ff5252 100%);
+            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: growBar 1.5s ease-out;
+        }
+        
+        @keyframes growBar {
+            from { width: 0 !important; }
+        }
+        
+        .impact-bar.after-bar {
+            background: linear-gradient(90deg, #69f0ae 0%, #4caf50 100%);
+        }
+        
+        .impact-percentage {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        .impact-arrow-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .impact-arrow {
+            font-size: 24px;
+            color: #58cc02;
+            font-weight: 700;
+            animation: pulseArrow 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulseArrow {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        
+        /* Persona Transition Visual */
+        .action-personas {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .persona-transition {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 8px;
+        }
+        
+        .transition-from, .transition-to {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+        
+        .transition-from {
+            border: 2px solid #ff6b6b;
+        }
+        
+        .transition-to.achiever {
+            border: 2px solid #ffd93d;
+            background: linear-gradient(135deg, #fffef5 0%, #fff9e6 100%);
+        }
+        
+        .transition-emoji {
+            font-size: 24px;
+        }
+        
+        .transition-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .transition-percent {
+            font-size: 12px;
+            color: #666;
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+        
+        .transition-arrow {
+            font-size: 20px;
+            color: #58cc02;
+            font-weight: 700;
+            animation: moveArrow 2s ease-in-out infinite;
+        }
+        
+        @keyframes moveArrow {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(5px); }
+        }
+        
+        /* Responsive design for actions */
+        @media (max-width: 768px) {
+            .action-card {
+                flex-direction: column;
+            }
+            
+            .impact-visual {
+                flex-direction: column;
+            }
+            
+            .action-metrics {
+                flex-direction: column;
+            }
+        }
+        
+        /* Appendix Section Styles */
+        .appendix-section {
+            margin: 40px 0 20px 0;
+            padding: 35px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-radius: 16px;
+            border: 2px solid #dee2e6;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        }
+        
+        .appendix-title {
+            font-size: 24px;
+            color: #2c3e50;
+            margin: 0 0 35px 0;
+            font-weight: 700;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #58cc02;
+        }
+        
+        .appendix-content {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .appendix-category {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            border-left: 4px solid #58cc02;
+            transition: all 0.3s ease;
+            animation: fadeInCategory 0.6s ease-out;
+            animation-fill-mode: both;
+        }
+        
+        @keyframes fadeInCategory {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .appendix-category:nth-child(1) { animation-delay: 0.1s; }
+        .appendix-category:nth-child(2) { animation-delay: 0.2s; }
+        .appendix-category:nth-child(3) { animation-delay: 0.3s; }
+        .appendix-category:nth-child(4) { animation-delay: 0.4s; }
+        .appendix-category:nth-child(5) { animation-delay: 0.5s; }
+        
+        .appendix-category:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+        }
+        
+        .category-title {
+            font-size: 18px;
+            color: #2c3e50;
+            margin: 0 0 15px 0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .category-icon {
+            font-size: 20px;
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+        }
+        
+        .category-content {
+            color: #495057;
+            line-height: 1.7;
+            font-size: 14px;
+        }
+        
+        .category-content p {
+            margin: 0;
+            text-align: justify;
+        }
+        
+        /* Prompt Box Styling */
+        .prompt-box {
+            background: linear-gradient(135deg, #f8f9fa 0%, #f0f2f5 100%);
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            position: relative;
+        }
+        
+        .prompt-header {
+            font-weight: 700;
+            color: #58cc02;
+            margin-bottom: 12px;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .prompt-text {
+            font-size: 13px;
+            line-height: 1.6;
+            color: #2c3e50;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        .prompt-text strong {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        
+        .prompt-text ol {
+            margin: 15px 0;
+            padding-left: 25px;
+        }
+        
+        .prompt-text ol li {
+            margin: 10px 0;
+            color: #495057;
+        }
+        
+        .prompt-requirements {
+            margin: 15px 0 0 0;
+            padding-left: 25px;
+            list-style-type: none;
+            position: relative;
+        }
+        
+        .prompt-requirements li {
+            margin: 8px 0;
+            padding-left: 20px;
+            position: relative;
+            color: #495057;
+            font-size: 13px;
+        }
+        
+        .prompt-requirements li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: #58cc02;
+            font-weight: 700;
+        }
+        
+        /* Responsive adjustments for appendix */
+        @media (max-width: 768px) {
+            .appendix-category {
+                padding: 20px;
+            }
+            
+            .prompt-text {
+                font-size: 12px;
+            }
+            
+            .category-content {
+                font-size: 13px;
+            }
+        }
+        
+        /* Floating Radar Chart Tooltip */
+        .radar-tooltip {
+            position: fixed;
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.25);
+            border: 3px solid #58cc02;
+            display: none;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            max-width: 550px;
+        }
+        
+        .radar-tooltip.active {
+            display: block;
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .radar-tooltip-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .radar-persona-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            object-fit: cover;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .radar-tooltip-header h3 {
+            margin: 0;
+            font-size: 22px;
+            color: #2c3e50;
+            font-weight: 700;
+        }
+        
+        .radar-subtitle {
+            font-size: 13px;
+            color: #888;
+            text-align: center;
+            margin-top: -12px;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+        
+        #floatingRadarChart {
+            display: block;
+            width: 100%;
+            height: auto;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .radar-grid circle {
+            fill: none;
+            stroke: #e0e0e0;
+            stroke-width: 1.5;
+            stroke-dasharray: 3, 3;
+        }
+        
+        .radar-axes line {
+            stroke: #c0c0c0;
+            stroke-width: 1.5;
+        }
+        
+        .radar-labels text {
+            font-size: 13px;
+            font-weight: 600;
+            fill: #555;
+            text-anchor: middle;
+        }
+        
+        .radar-polygon {
+            fill-opacity: 0.35;
+            stroke-width: 3;
+            transition: all 0.3s ease;
+        }
+        
+        .radar-point {
+            r: 6;
+            stroke: white;
+            stroke-width: 2.5;
+        }
+        
+        /* Responsive design for smaller screens */
+        @media (max-width: 768px) {
+            .insight-label {
+                min-width: 150px;
+            }
+            
+            .impact-cards {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .insight-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .insight-bars {
+                margin-top: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <h1>
+            <span class="duo-icon">🦉</span>Duolingo Personas
+        </h1>
+        
+        <!-- Summary of Methods Section -->
+        <div class="methods-summary">
+            <h2 class="methods-title">
+                <span style="font-size: 20px;">📊</span>
+                The Summary of Methods
+            </h2>
+            <div class="methods-content">
+                <div class="method-item">
+                    <span class="method-number">1.</span>
+                    <div class="method-text">
+                        <strong>Identify User Personas.</strong>
+                        First, we wanted to find the natural groupings that exist within our user base. We used a machine learning model to identify our user personas. This process revealed four distinct user types, which we named: Achievers, Professionals, Explorers, and Casuals.
+                    </div>
+                </div>
+                <div class="method-item">
+                    <span class="method-number">2.</span>
+                    <div class="method-text">
+                        <strong>Getting Insights.</strong>
+                        Next, we went beyond just grouping users to ask what specific actions lead to some key marketing success indicators. For example, we wanted to know if setting a daily goal actually <em>causes</em> someone to subscribe, or if using Duolingo daily <em>causes</em> users to use the app longer.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Persona Descriptions Section -->
+        <div class="personas-description">
+            <h2 class="personas-desc-title">
+                <span style="font-size: 20px;">👥</span>
+                Our Four User Personas
+            </h2>
+            <div class="personas-grid">
+                <!-- Casuals -->
+                <div class="persona-card">
+                    <div class="persona-card-header">
+                        <img src="./casual.png" alt="Casuals" class="persona-card-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <span class="persona-card-emoji" style="display:none;">😎</span>
+                        <div class="persona-card-title">
+                            <h3>Persona 1: Casuals</h3>
+                            <span class="persona-badge">32%</span>
+                        </div>
+                    </div>
+                    <div class="persona-card-content">
+                        <div class="persona-section">
+                            <strong>Characteristics:</strong> This is the largest group of users, showing infrequent engagement. They have the shortest streaks, fewest active days, and low course progress. They are typically at a beginner level.
+                        </div>
+                        <div class="persona-section">
+                            <strong>Motivation:</strong> Their motivations are diverse but generally not tied to a specific or urgent goal, leading to inconsistent app usage.
+                        </div>
+                        <div class="persona-section">
+                            <strong>Value:</strong> This group has the lowest subscription rate. They represent a significant opportunity for conversion if their engagement can be nurtured into a more consistent learning habit.
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Explorers -->
+                <div class="persona-card">
+                    <div class="persona-card-header">
+                        <img src="./explorer.png" alt="Explorers" class="persona-card-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <span class="persona-card-emoji" style="display:none;">🔍</span>
+                        <div class="persona-card-title">
+                            <h3>Persona 2: Explorers</h3>
+                            <span class="persona-badge">29.8%</span>
+                        </div>
+                    </div>
+                    <div class="persona-card-content">
+                        <div class="persona-section">
+                            <strong>Characteristics:</strong> This group demonstrates moderate but consistent engagement. Their usage metrics, like streaks and active days, fall between the Casuals and the more intense user groups.
+                        </div>
+                        <div class="persona-section">
+                            <strong>Motivation:</strong> They are primarily driven by a desire to connect with culture, people, and places. This includes learning for travel, to connect with their heritage, or to better understand a new culture.
+                        </div>
+                        <div class="persona-section">
+                            <strong>Value:</strong> They have a moderate subscription rate. They are willing to pay for features that enhance their cultural and social learning journey.
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Achievers -->
+                <div class="persona-card">
+                    <div class="persona-card-header">
+                        <img src="./achiever.png" alt="Achievers" class="persona-card-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <span class="persona-card-emoji" style="display:none;">🏆</span>
+                        <div class="persona-card-title">
+                            <h3>Persona 3: Achievers</h3>
+                            <span class="persona-badge">31.2%</span>
+                        </div>
+                    </div>
+                    <div class="persona-card-content">
+                        <div class="persona-section">
+                            <strong>Characteristics:</strong> These are long-time Duolingo veterans. They are defined by having the longest historical streaks and high course completion, indicating they were once extremely dedicated. However, their recent activity during the observation period was very low.
+                        </div>
+                        <div class="persona-section">
+                            <strong>Motivation:</strong> Their past motivation was clearly very high, but they now appear to be dormant, having likely achieved their original language goals or "graduated" from their courses.
+                        </div>
+                        <div class="persona-section">
+                            <strong>Value:</strong> While their current direct value may be low, they represent a pool of proven, successful users. They hold significant potential value if they can be re-engaged with new content, advanced challenges, or new language courses.
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Professionals -->
+                <div class="persona-card">
+                    <div class="persona-card-header">
+                        <img src="./professional.png" alt="Professionals" class="persona-card-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <span class="persona-card-emoji" style="display:none;">📚</span>
+                        <div class="persona-card-title">
+                            <h3>Persona 4: Professionals</h3>
+                            <span class="persona-badge">7%</span>
+                        </div>
+                    </div>
+                    <div class="persona-card-content">
+                        <div class="persona-section">
+                            <strong>Characteristics:</strong> These are highly focused and engaged users who learn efficiently. They have strong streaks, high commitment levels, and consistent activity.
+                        </div>
+                        <div class="persona-section">
+                            <strong>Motivation:</strong> Their main driver is professional or academic advancement. They are learning a new language for their career, for school, or to achieve other tangible real-world goals.
+                        </div>
+                        <div class="persona-section">
+                            <strong>Value:</strong> This persona has the highest subscription rate, making them a very valuable user segment. They view Duolingo as a critical tool for their success and are willing to invest in it.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <p class="hover-hint">
+            <span class="hint-icon">💡</span>
+            <span class="hint-text">Hover over each persona to see their detailed fingerprint</span>
+        </p>
+        
+        <div class="persona-container">
+            <!-- Casuals -->
+            <div class="persona-row">
+                <div class="persona-image-container">
+                    <img src="./casual.png" alt="Casual Persona" class="persona-image" 
+                         onerror="this.onerror=null; this.className='persona-image placeholder'; this.innerHTML='😎';">
+                    <div class="persona-label">Casuals</div>
+                    <div class="persona-percentage">32.0%</div>
+                </div>
+                <div class="metrics-container">
+                    <div class="metric-row">
+                        <div class="metric-label">
+                            <span class="metric-icon">📅</span>
+                            Active Days
+                        </div>
+                        <div class="bar-background">
+                            <div class="bar-fill active" data-value="15" data-max="91" style="width: 0%">
+                                <span class="bar-value">15</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metric-row">
+                        <div class="metric-label">
+                            <span class="metric-icon">🔥</span>
+                            Longest Streak
+                        </div>
+                        <div class="bar-background">
+                            <div class="bar-fill streak" data-value="41" data-max="315" style="width: 0%">
+                                <span class="bar-value">41</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metric-row">
+                        <div class="metric-label">
+                            <span class="metric-icon">📚</span>
+                            Lessons Done
+                        </div>
+                        <div class="bar-background">
+                            <div class="bar-fill lessons" data-value="48" data-max="977" style="width: 0%">
+                                <span class="bar-value">48</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Explorers -->
+            <div class="persona-row">
+                <div class="persona-image-container">
+                    <img src="./explorer.png" alt="Explorer Persona" class="persona-image"
+                         onerror="this.onerror=null; this.className='persona-image placeholder'; this.innerHTML='🔍';">
+                    <div class="persona-label">Explorers</div>
+                    <div class="persona-percentage">29.8%</div>
+                </div>
+                <div class="metrics-container">
+                    <div class="metric-row">
+                        <div class="metric-label">
+                            <span class="metric-icon">📅</span>
+                            Active Days
+                        </div>
+                        <div class="bar-background">
+                            <div class="bar-fill active" data-value="53" data-max="91" style="width: 0%">
+                                <span class="bar-value">53</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metric-row">
+                        <div class="metric-label">
+                            <span class="metric-icon">🔥</span>
+                            Longest Streak
+                        </div>
+                        <div class="bar-background">
+                            <div class="bar-fill streak" data-value="98" data-max="315" style="width: 0%">
+                                <span class="bar-value">98</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metric-row">
+                        <div class="metric-label">
+                            <span class="metric-icon">📚</span>
+                            Lessons Done
+                        </div>
+                        <div class="bar-background">
+                            <div class="bar-fill lessons" data-value="225" data-max="977" style="width: 0%">
+                                <span class="bar-value">225</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Achievers -->
+            <div class="persona-row">
+                <div class="persona-image-container">
+                    <img src="./achiever.png" alt="Achiever Persona" class="persona-image"
+                         onerror="this.onerror=null; this.className='persona-image placeholder'; this.innerHTML='🏆';">
+                    <div class="persona-label">Achievers</div>
+                    <div class="persona-percentage">31.2%</div>
+                </div>
+                <div class="metrics-container">
+                    <div class="metric-row">
+                        <div class="metric-label">
+                            <span class="metric-icon">📅</span>
+                            Active Days
+                        </div>
+                        <div class="bar-background">
+                            <div class="bar-fill active" data-value="73" data-max="91" style="width: 0%">
+                                <span class="bar-value">73</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metric-row">
+                        <div class="metric-label">
+                            <span class="metric-icon">🔥</span>
+                            Longest Streak
+                        </div>
+                        <div class="bar-background">
+                            <div class="bar-fill streak" data-value="315" data-max="315" style="width: 0%">
+                                <span class="bar-value">315</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metric-row">
+                        <div class="metric-label">
+                            <span class="metric-icon">📚</span>
+                            Lessons Done
+                        </div>
+                        <div class="bar-background">
+                            <div class="bar-fill lessons" data-value="253" data-max="977" style="width: 0%">
+                                <span class="bar-value">253</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Professionals -->
+            <div class="persona-row">
+                <div class="persona-image-container">
+                    <img src="./professional.png" alt="Professional Persona" class="persona-image"
+                         onerror="this.onerror=null; this.className='persona-image placeholder'; this.innerHTML='📚';">
+                    <div class="persona-label">Professionals</div>
+                    <div class="persona-percentage">7.0%</div>
+                </div>
+                <div class="metrics-container">
+                    <div class="metric-row">
+                        <div class="metric-label">
+                            <span class="metric-icon">📅</span>
+                            Active Days
+                        </div>
+                        <div class="bar-background">
+                            <div class="bar-fill active" data-value="91" data-max="91" style="width: 0%">
+                                <span class="bar-value">91</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metric-row">
+                        <div class="metric-label">
+                            <span class="metric-icon">🔥</span>
+                            Longest Streak
+                        </div>
+                        <div class="bar-background">
+                            <div class="bar-fill streak" data-value="238" data-max="315" style="width: 0%">
+                                <span class="bar-value">238</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metric-row">
+                        <div class="metric-label">
+                            <span class="metric-icon">📚</span>
+                            Lessons Done
+                        </div>
+                        <div class="bar-background">
+                            <div class="bar-fill lessons" data-value="977" data-max="977" style="width: 0%">
+                                <span class="bar-value">977</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Business Value Bubble Chart -->
+        <div class="bubble-chart-section">
+            <h2 class="bubble-title">
+                <span style="font-size: 20px;">💎</span>
+                Business Value Matrix
+            </h2>
+            <div class="bubble-chart-container">
+                <div class="bubble-chart-wrapper">
+                    <svg id="bubbleChart" width="700" height="500" viewBox="0 0 700 500">
+                        <!-- Grid lines -->
+                        <g class="grid-lines"></g>
+                        <!-- Axes -->
+                        <g class="axes"></g>
+                        <!-- Axis labels -->
+                        <g class="axis-labels"></g>
+                        <!-- Bubbles will be added here -->
+                        <g class="bubbles"></g>
+                    </svg>
+                </div>
+            </div>
+            
+            <!-- Business Value Quadrants Explanation -->
+            <div class="quadrants-explanation">
+                <h3>Business Value Quadrants</h3>
+                <div class="quadrants-grid">
+                    <div class="quadrant-card champions">
+                        <div class="quadrant-icon">💡</div>
+                        <h4>Champions</h4>
+                        <span class="quadrant-position">(top-right)</span>
+                        <p>High commitment, high subscription → Most valuable, loyal, and monetized.</p>
+                    </div>
+                    <div class="quadrant-card sustainers">
+                        <div class="quadrant-icon">💪</div>
+                        <h4>Sustainers</h4>
+                        <span class="quadrant-position">(top-left)</span>
+                        <p>Lower commitment, high subscription → Stable revenue drivers, easy to maintain.</p>
+                    </div>
+                    <div class="quadrant-card potentials">
+                        <div class="quadrant-icon">🌱</div>
+                        <h4>Potentials</h4>
+                        <span class="quadrant-position">(bottom-right)</span>
+                        <p>High commitment, low subscription → Engaged users with strong potential to convert.</p>
+                    </div>
+                    <div class="quadrant-card nurtures">
+                        <div class="quadrant-icon">🌟</div>
+                        <h4>Nurtures</h4>
+                        <span class="quadrant-position">(bottom-left)</span>
+                        <p>Low commitment, low subscription → Require targeted engagement strategies to grow.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Key Insights Bar Chart Section -->
+        <div class="insights-section">
+            <h2 class="insights-title">
+                <span style="font-size: 20px;">📈</span>
+                Key Insights: What Drives Subscriptions?
+            </h2>
+            
+            <div class="baseline-indicator">
+                <div class="baseline-content">
+                    <span class="baseline-label">Overall Baseline Subscription Rate:</span>
+                    <span class="baseline-value">31.5%</span>
+                </div>
+            </div>
+            
+            <div class="insights-chart-container">
+                <div class="insight-row" data-without="26.2" data-with="43.3" data-increase="17.1">
+                    <div class="insight-label">
+                        <span class="insight-icon">🎯</span>
+                        <span class="insight-text">Setting Daily Goal</span>
+                    </div>
+                    <div class="insight-bars">
+                        <div class="bar-group">
+                            <div class="bar-wrapper without">
+                                <div class="insight-bar without-bar" style="width: 0%">
+                                    <span class="bar-label">Without: 26.2%</span>
+                                </div>
+                            </div>
+                            <div class="bar-wrapper with">
+                                <div class="insight-bar with-bar" style="width: 0%">
+                                    <span class="bar-label">With: 43.3%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="increase-indicator">
+                            <span class="increase-arrow">↑</span>
+                            <span class="increase-value">+17.1%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="insight-row" data-without="33.8" data-with="40.8" data-increase="7.0">
+                    <div class="insight-label">
+                        <span class="insight-icon">💪</span>
+                        <span class="insight-text">High Commitment</span>
+                    </div>
+                    <div class="insight-bars">
+                        <div class="bar-group">
+                            <div class="bar-wrapper without">
+                                <div class="insight-bar without-bar" style="width: 0%">
+                                    <span class="bar-label">Without: 33.8%</span>
+                                </div>
+                            </div>
+                            <div class="bar-wrapper with">
+                                <div class="insight-bar with-bar" style="width: 0%">
+                                    <span class="bar-label">With: 40.8%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="increase-indicator">
+                            <span class="increase-arrow">↑</span>
+                            <span class="increase-value">+7.0%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="insight-row" data-without="16.7" data-with="42.1" data-increase="25.4">
+                    <div class="insight-label">
+                        <span class="insight-icon">📅</span>
+                        <span class="insight-text">Daily Usage</span>
+                    </div>
+                    <div class="insight-bars">
+                        <div class="bar-group">
+                            <div class="bar-wrapper without">
+                                <div class="insight-bar without-bar" style="width: 0%">
+                                    <span class="bar-label">Without: 16.7%</span>
+                                </div>
+                            </div>
+                            <div class="bar-wrapper with">
+                                <div class="insight-bar with-bar" style="width: 0%">
+                                    <span class="bar-label">With: 42.1%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="increase-indicator">
+                            <span class="increase-arrow">↑</span>
+                            <span class="increase-value">+25.4%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="insights-summary">
+                <h3>Impact Analysis</h3>
+                <div class="impact-cards">
+                    <div class="impact-card highest">
+                        <div class="impact-icon">🥇</div>
+                        <div class="impact-content">
+                            <div class="impact-title">Highest Impact</div>
+                            <div class="impact-factor">Daily Usage</div>
+                            <div class="impact-stat">+25.4% increase</div>
+                        </div>
+                    </div>
+                    <div class="impact-card moderate">
+                        <div class="impact-icon">🥈</div>
+                        <div class="impact-content">
+                            <div class="impact-title">Strong Impact</div>
+                            <div class="impact-factor">Setting Daily Goal</div>
+                            <div class="impact-stat">+17.1% increase</div>
+                        </div>
+                    </div>
+                    <div class="impact-card lowest">
+                        <div class="impact-icon">🥉</div>
+                        <div class="impact-content">
+                            <div class="impact-title">Moderate Impact</div>
+                            <div class="impact-factor">High Commitment</div>
+                            <div class="impact-stat">+7.0% increase</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recommended Actions Section -->
+        <div class="actions-section">
+            <h2 class="actions-title">
+                <span style="font-size: 20px;">🎯</span>
+                Recommended Actions
+            </h2>
+            
+            <div class="actions-container">
+                <!-- Action 1 -->
+                <div class="action-card">
+                    <div class="action-number">1</div>
+                    <div class="action-content">
+                        <h3 class="action-heading">Target committed users for subscription offers.</h3>
+                        <p class="action-description">Daily users and those with high commitment levels already engage deeply with Duolingo and show the highest subscription rates, making them the most promising segment for conversion campaigns.</p>
+                        <div class="action-metrics">
+                            <div class="metric-badge">
+                                <span class="metric-label">Daily Users</span>
+                                <span class="metric-value">42.1%</span>
+                            </div>
+                            <div class="metric-badge">
+                                <span class="metric-label">High Commitment</span>
+                                <span class="metric-value">40.8%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action 2 -->
+                <div class="action-card">
+                    <div class="action-number">2</div>
+                    <div class="action-content">
+                        <h3 class="action-heading">Encourage new users to set a daily goal.</h3>
+                        <p class="action-description">Setting a daily goal significantly raises engagement and increases subscription likelihood (from ~26% to over 43%), so onboarding flows should highlight this step.</p>
+                        <div class="action-impact">
+                            <div class="impact-visual">
+                                <div class="impact-before">
+                                    <span class="impact-label">Without Goal</span>
+                                    <div class="impact-bar before-bar" style="width: 52.4%"></div>
+                                    <span class="impact-percentage">26%</span>
+                                </div>
+                                <div class="impact-arrow-container">
+                                    <span class="impact-arrow">→</span>
+                                </div>
+                                <div class="impact-after">
+                                    <span class="impact-label">With Goal</span>
+                                    <div class="impact-bar after-bar" style="width: 86.6%"></div>
+                                    <span class="impact-percentage">43%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action 3 -->
+                <div class="action-card">
+                    <div class="action-number">3</div>
+                    <div class="action-content">
+                        <h3 class="action-heading">Develop Casuals and Explorers into Achievers.</h3>
+                        <p class="action-description">These groups show lower commitment today but can be nurtured with stronger reward systems (e.g., badges, streak boosters, or milestone celebrations) to promote frequent and consistent use, moving them toward higher-value personas.</p>
+                        <div class="action-personas">
+                            <div class="persona-transition">
+                                <div class="transition-from">
+                                    <span class="transition-emoji">😎</span>
+                                    <span class="transition-label">Casuals</span>
+                                    <span class="transition-percent">32%</span>
+                                </div>
+                                <div class="transition-arrow">➔</div>
+                                <div class="transition-to achiever">
+                                    <span class="transition-emoji">🏆</span>
+                                    <span class="transition-label">Achievers</span>
+                                </div>
+                            </div>
+                            <div class="persona-transition">
+                                <div class="transition-from">
+                                    <span class="transition-emoji">🔍</span>
+                                    <span class="transition-label">Explorers</span>
+                                    <span class="transition-percent">29.8%</span>
+                                </div>
+                                <div class="transition-arrow">➔</div>
+                                <div class="transition-to achiever">
+                                    <span class="transition-emoji">🏆</span>
+                                    <span class="transition-label">Achievers</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Appendix Section -->
+        <div class="appendix-section">
+            <h2 class="appendix-title">
+                <span style="font-size: 20px;">📝</span>
+                Appendix — Use of AI
+            </h2>
+            
+            <div class="appendix-content">
+                <!-- Tools Used -->
+                <div class="appendix-category">
+                    <h3 class="category-title">
+                        <span class="category-icon">🛠️</span>
+                        Tools Used
+                    </h3>
+                    <div class="category-content">
+                        <p>I used three AI tools—Gemini, Claude, and ChatGPT—at different stages of the project, each chosen for their strengths. Gemini was most useful for structured tasks such as data cleaning, feature engineering, and running clustering algorithms to identify user personas. Its output provided a solid starting point for reproducible pipelines. Claude was particularly effective for statistical reasoning and code generation in the causal inference phase; it also helped me build more interactive and interpretable visualizations, which improved the clarity of insights. ChatGPT supported the documentation process by helping me draft concise, audience-friendly explanations and by generating persona images that made the results more engaging for non-technical readers. By combining these tools, I was able to accelerate routine coding tasks, enhance interpretability, and dedicate more time to reviewing, validating, and refining the analysis.</p>
+                    </div>
+                </div>
+                
+                <!-- Sample Prompt 1 -->
+                <div class="appendix-category">
+                    <h3 class="category-title">
+                        <span class="category-icon">💬</span>
+                        Sample Prompt (Data Processing & Personas Clustering)
+                    </h3>
+                    <div class="category-content prompt-box">
+                        <div class="prompt-header">Prompt:</div>
+                        <div class="prompt-text">
+                            I've attached the requirement PDF to you. I've also attached the survey data and app usage data as two separate CSV files to you. After you have read the requirement, please hold off on writing your code or the report. <strong>IMPORTANT: only analyze the user personas for now.</strong>
+                            <br><br>
+                            I need you to think about the following questions before writing your code:
+                            <ol>
+                                <li>What do you need to do to cleanse the data? e.g., How do you deal with the rows and columns that are empty? How do you deal with duplicated data? Consider performing professional feature engineering, for example, converting strings to ordinal.</li>
+                                <li>After you have cleansed the data, we jump into the data analysis and feature engineering part. Since we are analyzing user personas that would potentially help the marketing team and product development team to optimize the Duolingo product. What are the success indicators in marketing? For example, subscription rate? Users ever subscribed rate? Retention rate? And what are the success indicators in product development, for example, daily usage? Lesson completion rate?</li>
+                                <li>What clustering methods best fit the users (after feature engineering)? Make sure that the clustering is strong.</li>
+                            </ol>
+                            Then, after careful consideration, complete the following tasks with the requirements:
+                            <ul class="prompt-requirements">
+                                <li>Write your code in Python. Show me your code elegantly, with detailed comments, a reproducible setup, and import any necessary libraries. Note that the csv files are located in "data/...csv".</li>
+                                <li>Do not use variables or functions that have not been previously instantiated. Also, don't make up any data.</li>
+                                <li>If your response reaches the limit, ask me to press the continue button, then you continue writing on your code.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sample Prompt 2 -->
+                <div class="appendix-category">
+                    <h3 class="category-title">
+                        <span class="category-icon">📊</span>
+                        Sample Prompt (Data Analysis)
+                    </h3>
+                    <div class="category-content prompt-box">
+                        <div class="prompt-header">Prompt:</div>
+                        <div class="prompt-text">
+                            Considering the statistical analysis and causal inference. As a professional statistician, you need to systematically and professionally think about the following questions. Consider using professional and precise feature engineering:
+                            <ol>
+                                <li>What features CAUSED the success feature in marketing? For example, what features cause a user to pay?</li>
+                                <li>What features CAUSED the success feature in product? For example, what features cause a user to use the app actively?</li>
+                                <li>What causal inference methods do you want to use? For example, do you want to use Average Treatment Effects?</li>
+                                <li>How do you validate your conclusion? If your conclusion is strong, moderate, or weak, point it out.</li>
+                            </ol>
+                            After careful and professional consideration, complete the following tasks with the requirements:
+                            <ul class="prompt-requirements">
+                                <li>Write your code in Python. Show me your code elegantly, with detailed comments, a reproducible setup, and import any necessary libraries. Note that all files are located in "data/...".</li>
+                                <li>Do not use variables or functions that have not been previously instantiated. Most importantly, don't make up any data.</li>
+                                <li>If your response reaches the limit, ask me to press the continue button, then you continue writing your code.</li>
+                                <li>Make sure all your methods and implementations follow Occam's razor's rules. If there are multiple ways to solve the same problem, choose the simplest one. Don't use two or more methods for the same question, unless you think that it's necessary.</li>
+                                <li>Review your code in the end. Make sure your code is ready to run.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- What I kept or changed -->
+                <div class="appendix-category">
+                    <h3 class="category-title">
+                        <span class="category-icon">🔄</span>
+                        What I kept or changed
+                    </h3>
+                    <div class="category-content">
+                        <p>I kept AI's reproducible pipelines, such as using seeded random states and modularized code for clustering and regression, because these ensured consistency and transparency. The clustering suggestions (e.g., applying K-means with pre-processed demographic and usage features) aligned with best practices and were therefore adopted with minor adjustments. However, I simplified several over-engineered implementations that the AI initially proposed—for example, it sometimes suggested multiple overlapping models where one clear approach was sufficient. I also corrected statistical misuses, such as replacing a t-test on non-normal distributions with nonparametric or regression-based alternatives. These changes allowed me to keep the workflow lean while maintaining analytical rigor.</p>
+                    </div>
+                </div>
+                
+                <!-- Verification -->
+                <div class="appendix-category">
+                    <h3 class="category-title">
+                        <span class="category-icon">✅</span>
+                        Verification
+                    </h3>
+                    <div class="category-content">
+                        <p>To verify correctness, I applied multiple layers of checks. First, I validated outputs by scanning for implausible values, such as percentages above 100%, binary indicators coded incorrectly, or extreme outliers that suggested preprocessing errors. I also reviewed both the code and the AI-generated comments line by line to ensure the logic matched the intended statistical method. Reproducibility was guaranteed by fixing random seeds and exporting intermediate tables that linked directly to key graphs and findings. When AI produced results outside my expertise, I cross-checked the recommended methods against statistical references and online academic resources before deciding to adopt them. Finally, the validation of the results is achieved by e.g., bootstrap confidence intervals, covariate balance assessments) to make sure the insights were robust rather than artifacts of one particular modeling choice.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Floating Radar Chart (appears on hover) -->
+        <div id="radarTooltip" class="radar-tooltip">
+            <div class="radar-tooltip-header">
+                <img id="radarPersonaImage" src="" alt="" class="radar-persona-image">
+                <h3 id="radarPersonaName"></h3>
+            </div>
+            <div class="radar-subtitle">Engagement across 5 key dimensions</div>
+            <svg id="floatingRadarChart" width="500" height="500" viewBox="0 0 500 500">
+                <g class="radar-grid"></g>
+                <g class="radar-axes"></g>
+                <g class="radar-data"></g>
+                <g class="radar-labels"></g>
+            </svg>
+        </div>
+    </div>
+    
+    <script>
+        // Animate bars on page load
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                const bars = document.querySelectorAll('.bar-fill');
+                bars.forEach(bar => {
+                    const value = parseFloat(bar.dataset.value);
+                    const max = parseFloat(bar.dataset.max);
+                    const percentage = (value / max) * 100;
+                    bar.style.width = percentage + '%';
+                });
+            }, 200);
+            
+            // Animate insight bars
+            setTimeout(function() {
+                const insightRows = document.querySelectorAll('.insight-row');
+                insightRows.forEach(row => {
+                    const withoutValue = parseFloat(row.dataset.without);
+                    const withValue = parseFloat(row.dataset.with);
+                    
+                    // Max value for scaling (let's use 50% as max for better visualization)
+                    const maxValue = 50;
+                    
+                    const withoutBar = row.querySelector('.without-bar');
+                    const withBar = row.querySelector('.with-bar');
+                    
+                    if (withoutBar) {
+                        withoutBar.style.width = (withoutValue / maxValue * 100) + '%';
+                    }
+                    if (withBar) {
+                        withBar.style.width = (withValue / maxValue * 100) + '%';
+                    }
+                });
+            }, 500);
+            
+            // Initialize hover radar chart
+            initHoverRadarChart();
+            
+            // Initialize bubble chart
+            initBubbleChart();
+        });
+        
+        // Add hover effect to bars
+        document.querySelectorAll('.bar-fill').forEach(bar => {
+            bar.addEventListener('mouseenter', function() {
+                this.style.filter = 'brightness(1.1)';
+            });
+            bar.addEventListener('mouseleave', function() {
+                this.style.filter = 'brightness(1)';
+            });
+        });
+        
+        // Hover Radar Chart Implementation
+        function initHoverRadarChart() {
+            const personaData = {
+                casual: {
+                    name: 'Casuals',
+                    image: './casual.png',
+                    emoji: '😎',
+                    color: '#ff6b6b',
+                    data: [0.234, 0.079, 0.347, 0.343, 0.372]
+                },
+                explorer: {
+                    name: 'Explorers',
+                    image: './explorer.png',
+                    emoji: '🔍',
+                    color: '#4ecdc4',
+                    data: [0.516, 0.335, 0.558, 0.356, 0.699]
+                },
+                achiever: {
+                    name: 'Achievers',
+                    image: './achiever.png',
+                    emoji: '🏆',
+                    color: '#ffd93d',
+                    data: [0.691, 0.476, 0.587, 0.754, 0.407]
+                },
+                professional: {
+                    name: 'Professionals',
+                    image: './professional.png',
+                    emoji: '📚',
+                    color: '#6c5ce7',
+                    data: [0.769, 0.683, 0.709, 0.696, 0.647]
+                }
+            };
+            
+            const labels = [
+                'Longest\nStreak',
+                'Purchased\nSubscription',
+                'Commitment',
+                'Course\nProgress',
+                'Activity\nRate'
+            ];
+            
+            const tooltip = document.getElementById('radarTooltip');
+            const personaRows = document.querySelectorAll('.persona-row');
+            let hideTimeout;
+            
+            personaRows.forEach((row, index) => {
+                const personaKeys = ['casual', 'explorer', 'achiever', 'professional'];
+                const personaKey = personaKeys[index];
+                const persona = personaData[personaKey];
+                
+                row.addEventListener('mouseenter', function(e) {
+                    clearTimeout(hideTimeout);
+                    showRadarChart(persona, labels, e);
+                });
+                
+                row.addEventListener('mousemove', function(e) {
+                    // Only update position if tooltip is active
+                    if (tooltip.classList.contains('active')) {
+                        positionTooltip(e);
+                    }
+                });
+                
+                row.addEventListener('mouseleave', function() {
+                    hideTimeout = setTimeout(() => {
+                        tooltip.classList.remove('active');
+                        setTimeout(() => {
+                            tooltip.style.display = 'none';
+                        }, 200);
+                    }, 50);
+                });
+            });
+            
+            function showRadarChart(persona, labels, event) {
+                const tooltip = document.getElementById('radarTooltip');
+                const svg = document.getElementById('floatingRadarChart');
+                const centerX = 250;
+                const centerY = 250;
+                const radius = 180;
+                const levels = 5;
+                const angleSlice = (Math.PI * 2) / labels.length;
+                
+                // Clear previous content
+                svg.querySelectorAll('.radar-grid').forEach(g => g.innerHTML = '');
+                svg.querySelectorAll('.radar-axes').forEach(g => g.innerHTML = '');
+                svg.querySelectorAll('.radar-data').forEach(g => g.innerHTML = '');
+                svg.querySelectorAll('.radar-labels').forEach(g => g.innerHTML = '');
+                
+                // Update header
+                document.getElementById('radarPersonaName').textContent = persona.name + ' Fingerprint';
+                const personaImg = document.getElementById('radarPersonaImage');
+                personaImg.src = persona.image;
+                personaImg.alt = persona.name;
+                personaImg.style.display = 'block';
+                personaImg.onerror = function() {
+                    this.style.display = 'none';
+                    // Create emoji fallback
+                    const emojiSpan = document.createElement('span');
+                    emojiSpan.textContent = persona.emoji;
+                    emojiSpan.style.fontSize = '40px';
+                    emojiSpan.style.marginRight = '15px';
+                    if (!this.nextElementSibling || this.nextElementSibling.tagName !== 'SPAN') {
+                        this.parentNode.insertBefore(emojiSpan, this.nextElementSibling);
+                    }
+                };
+                
+                // Draw grid circles
+                const gridGroup = svg.querySelector('.radar-grid');
+                for (let level = 1; level <= levels; level++) {
+                    const levelRadius = (radius / levels) * level;
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    circle.setAttribute('cx', centerX);
+                    circle.setAttribute('cy', centerY);
+                    circle.setAttribute('r', levelRadius);
+                    gridGroup.appendChild(circle);
+                    
+                    // Add level labels
+                    if (level % 2 === 0 || level === levels) { // Show labels for 0.4, 0.8, 1.0
+                        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                        text.setAttribute('x', centerX + 5);
+                        text.setAttribute('y', centerY - levelRadius);
+                        text.setAttribute('font-size', '11');
+                        text.setAttribute('fill', '#999');
+                        text.textContent = (level * 0.2).toFixed(1);
+                        gridGroup.appendChild(text);
+                    }
+                }
+                
+                // Draw axes
+                const axesGroup = svg.querySelector('.radar-axes');
+                labels.forEach((label, i) => {
+                    const angle = angleSlice * i - Math.PI / 2;
+                    const lineX = centerX + Math.cos(angle) * radius;
+                    const lineY = centerY + Math.sin(angle) * radius;
+                    
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', centerX);
+                    line.setAttribute('y1', centerY);
+                    line.setAttribute('x2', lineX);
+                    line.setAttribute('y2', lineY);
+                    axesGroup.appendChild(line);
+                });
+                
+                // Draw labels
+                const labelsGroup = svg.querySelector('.radar-labels');
+                labels.forEach((label, i) => {
+                    const angle = angleSlice * i - Math.PI / 2;
+                    const labelX = centerX + Math.cos(angle) * (radius + 35);
+                    const labelY = centerY + Math.sin(angle) * (radius + 35);
+                    
+                    const lines = label.split('\n');
+                    lines.forEach((line, lineIndex) => {
+                        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                        text.setAttribute('x', labelX);
+                        text.setAttribute('y', labelY + (lineIndex * 12));
+                        text.setAttribute('text-anchor', 'middle');
+                        text.setAttribute('dominant-baseline', 'middle');
+                        text.setAttribute('font-size', '13');
+                        text.setAttribute('font-weight', '600');
+                        text.textContent = line;
+                        labelsGroup.appendChild(text);
+                    });
+                });
+                
+                // Draw data polygon
+                const dataGroup = svg.querySelector('.radar-data');
+                const points = persona.data.map((value, i) => {
+                    const angle = angleSlice * i - Math.PI / 2;
+                    const x = centerX + Math.cos(angle) * radius * value;
+                    const y = centerY + Math.sin(angle) * radius * value;
+                    return `${x},${y}`;
+                });
+                
+                // Create polygon
+                const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                polygon.setAttribute('points', points.join(' '));
+                polygon.setAttribute('fill', persona.color);
+                polygon.setAttribute('stroke', persona.color);
+                polygon.setAttribute('stroke-width', '3');
+                polygon.classList.add('radar-polygon');
+                dataGroup.appendChild(polygon);
+                
+                // Add points
+                persona.data.forEach((value, i) => {
+                    const angle = angleSlice * i - Math.PI / 2;
+                    const x = centerX + Math.cos(angle) * radius * value;
+                    const y = centerY + Math.sin(angle) * radius * value;
+                    
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    circle.setAttribute('cx', x);
+                    circle.setAttribute('cy', y);
+                    circle.setAttribute('fill', persona.color);
+                    circle.classList.add('radar-point');
+                    dataGroup.appendChild(circle);
+                    
+                    // Add value label with background
+                    const valueGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                    
+                    // Background circle for value
+                    const bgCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    bgCircle.setAttribute('cx', x);
+                    bgCircle.setAttribute('cy', y - 15);
+                    bgCircle.setAttribute('r', '15');
+                    bgCircle.setAttribute('fill', 'white');
+                    bgCircle.setAttribute('opacity', '0.95');
+                    valueGroup.appendChild(bgCircle);
+                    
+                    const valueText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    valueText.setAttribute('x', x);
+                    valueText.setAttribute('y', y - 15);
+                    valueText.setAttribute('text-anchor', 'middle');
+                    valueText.setAttribute('dominant-baseline', 'middle');
+                    valueText.setAttribute('font-size', '11');
+                    valueText.setAttribute('font-weight', 'bold');
+                    valueText.setAttribute('fill', persona.color);
+                    valueText.textContent = Math.round(value * 100) + '%';
+                    valueGroup.appendChild(valueText);
+                    
+                    dataGroup.appendChild(valueGroup);
+                });
+                
+                // Show and position tooltip
+                tooltip.style.display = 'block';
+                // Ensure tooltip is positioned before making it visible
+                positionTooltip(event);
+                // Force browser to recalculate layout
+                tooltip.offsetHeight;
+                // Now add the active class for animation
+                tooltip.classList.add('active');
+            }
+            
+            function positionTooltip(event) {
+                const tooltip = document.getElementById('radarTooltip');
+                const tooltipWidth = 550;
+                const tooltipHeight = 600;
+                const offset = 40; // Distance from cursor
+                
+                // Get mouse position relative to viewport
+                const mouseX = event.clientX;
+                const mouseY = event.clientY;
+                
+                // Calculate available space
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+                const spaceOnRight = viewportWidth - mouseX;
+                const spaceOnLeft = mouseX;
+                
+                let left, top;
+                
+                // Determine horizontal position
+                if (spaceOnRight >= tooltipWidth + offset + 20) {
+                    // Show on right side
+                    left = mouseX + offset;
+                } else if (spaceOnLeft >= tooltipWidth + offset + 20) {
+                    // Show on left side
+                    left = mouseX - tooltipWidth - offset;
+                } else {
+                    // Not enough space on either side, position at edge
+                    if (spaceOnRight > spaceOnLeft) {
+                        left = viewportWidth - tooltipWidth - 10;
+                    } else {
+                        left = 10;
+                    }
+                }
+                
+                // Determine vertical position (center on cursor)
+                top = mouseY - (tooltipHeight / 2);
+                
+                // Keep tooltip within viewport vertically
+                if (top < 10) {
+                    top = 10;
+                }
+                if (top + tooltipHeight > viewportHeight - 10) {
+                    top = viewportHeight - tooltipHeight - 10;
+                }
+                
+                // Apply positions (fixed positioning, so no need to add scroll)
+                tooltip.style.left = left + 'px';
+                tooltip.style.top = top + 'px';
+            }
+        }
+        
+        // Bubble Chart Implementation
+        function initBubbleChart() {
+            // Data from persona_business_value.csv
+            // IMPORTANT: Update these values with your actual CSV data
+            const bubbleData = [
+                {
+                    persona: 'Casuals',
+                    image: './casual.png',
+                    subscription_rate: 0.079,  // Update with your CSV value
+                    commitment_level: 1.39,    // Update with your CSV value (0-4 scale)
+                    population: 32.0,           
+                    color: '#ff6b6b'
+                },
+                {
+                    persona: 'Explorers',
+                    image: './explorer.png',
+                    subscription_rate: 0.335,  // Update with your CSV value
+                    commitment_level: 2.23,    // Update with your CSV value
+                    population: 29.8,
+                    color: '#4ecdc4'
+                },
+                {
+                    persona: 'Achievers',
+                    image: './achiever.png',
+                    subscription_rate: 0.476,  // Update with your CSV value
+                    commitment_level: 2.35,    // Update with your CSV value
+                    population: 31.2,
+                    color: '#ffd93d'
+                },
+                {
+                    persona: 'Professionals',
+                    image: './professional.png',
+                    subscription_rate: 0.683,  // Update with your CSV value
+                    commitment_level: 2.84,    // Update with your CSV value
+                    population: 7.0,
+                    color: '#6c5ce7'
+                }
+            ];
+            
+            const svg = document.getElementById('bubbleChart');
+            const width = 700;
+            const height = 500;
+            const margin = { top: 50, right: 50, bottom: 50, left: 50 };
+            const chartWidth = width - margin.left - margin.right;
+            const chartHeight = height - margin.top - margin.bottom;
+            
+            // Center point of the chart
+            const centerX = margin.left + chartWidth / 2;
+            const centerY = margin.top + chartHeight / 2;
+            
+            // Clear existing content
+            svg.querySelectorAll('.grid-lines').forEach(g => g.innerHTML = '');
+            svg.querySelectorAll('.axes').forEach(g => g.innerHTML = '');
+            svg.querySelectorAll('.axis-labels').forEach(g => g.innerHTML = '');
+            svg.querySelectorAll('.bubbles').forEach(g => g.innerHTML = '');
+            
+            // Scales - adjusted to center at midpoint
+            const xScale = (value) => centerX + ((value - 2) / 2) * chartWidth / 2;
+            const yScale = (value) => centerY - ((value - 0.5) / 0.5) * chartHeight / 2;
+            
+            // Calculate bubble sizes
+            const maxPop = Math.max(...bubbleData.map(d => d.population));
+            const minPop = Math.min(...bubbleData.map(d => d.population));
+            bubbleData.forEach(d => {
+                // Scale bubble radius between 25 and 65 pixels
+                d.radius = 25 + ((d.population - minPop) / (maxPop - minPop)) * 40;
+            });
+            
+            // Draw grid lines and quadrant backgrounds
+            const gridGroup = svg.querySelector('.grid-lines');
+            
+            // Add quadrant backgrounds
+            const quadrantColors = [
+                { x: 0, y: 0, w: centerX - margin.left, h: centerY - margin.top, color: '#ffebee', opacity: 0.15 },     // Top-left: Sustainers
+                { x: centerX, y: 0, w: centerX - margin.left, h: centerY - margin.top, color: '#e3f2fd', opacity: 0.2 }, // Top-right: Champions
+                { x: 0, y: centerY, w: centerX - margin.left, h: centerY - margin.top, color: '#fff5f5', opacity: 0.1 }, // Bottom-left: Nurtures
+                { x: centerX, y: centerY, w: centerX - margin.left, h: centerY - margin.top, color: '#fff3e0', opacity: 0.15 } // Bottom-right: Potentials
+            ];
+            
+            quadrantColors.forEach(q => {
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('x', margin.left + q.x);
+                rect.setAttribute('y', margin.top + q.y);
+                rect.setAttribute('width', q.w);
+                rect.setAttribute('height', q.h);
+                rect.setAttribute('fill', q.color);
+                rect.setAttribute('opacity', q.opacity);
+                gridGroup.appendChild(rect);
+            });
+            
+            // Draw grid lines (dashed)
+            for (let i = 1; i <= 3; i++) {
+                if (i !== 2) { // Skip center lines as we'll draw them as axes
+                    // Vertical lines
+                    const vLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    vLine.setAttribute('x1', xScale(i));
+                    vLine.setAttribute('y1', margin.top);
+                    vLine.setAttribute('x2', xScale(i));
+                    vLine.setAttribute('y2', margin.top + chartHeight);
+                    vLine.setAttribute('stroke', '#e0e0e0');
+                    vLine.setAttribute('stroke-dasharray', '3, 3');
+                    gridGroup.appendChild(vLine);
+                }
+            }
+            
+            for (let i = 2; i <= 8; i += 2) {
+                if (i !== 5) { // Skip center line
+                    // Horizontal lines
+                    const hLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    hLine.setAttribute('x1', margin.left);
+                    hLine.setAttribute('y1', yScale(i / 10));
+                    hLine.setAttribute('x2', margin.left + chartWidth);
+                    hLine.setAttribute('y2', yScale(i / 10));
+                    hLine.setAttribute('stroke', '#e0e0e0');
+                    hLine.setAttribute('stroke-dasharray', '3, 3');
+                    gridGroup.appendChild(hLine);
+                }
+            }
+            
+            // Draw axes (centered)
+            const axesGroup = svg.querySelector('.axes');
+            
+            // X-axis (horizontal through center)
+            const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            xAxis.setAttribute('x1', margin.left);
+            xAxis.setAttribute('y1', centerY);
+            xAxis.setAttribute('x2', margin.left + chartWidth);
+            xAxis.setAttribute('y2', centerY);
+            xAxis.setAttribute('stroke', '#666');
+            xAxis.setAttribute('stroke-width', '2');
+            axesGroup.appendChild(xAxis);
+            
+            // Y-axis (vertical through center)
+            const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            yAxis.setAttribute('x1', centerX);
+            yAxis.setAttribute('y1', margin.top);
+            yAxis.setAttribute('x2', centerX);
+            yAxis.setAttribute('y2', margin.top + chartHeight);
+            yAxis.setAttribute('stroke', '#666');
+            yAxis.setAttribute('stroke-width', '2');
+            axesGroup.appendChild(yAxis);
+            
+            // Add axis labels
+            const labelsGroup = svg.querySelector('.axis-labels');
+            
+            // X-axis endpoint labels
+            const leftLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            leftLabel.setAttribute('x', margin.left - 10);
+            leftLabel.setAttribute('y', centerY - 10);
+            leftLabel.setAttribute('text-anchor', 'start');
+            leftLabel.setAttribute('font-size', '13');
+            leftLabel.setAttribute('font-weight', '600');
+            leftLabel.setAttribute('fill', '#495057');
+            leftLabel.textContent = 'Low Commitment';
+            labelsGroup.appendChild(leftLabel);
+            
+            const rightLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            rightLabel.setAttribute('x', margin.left + chartWidth + 10);
+            rightLabel.setAttribute('y', centerY - 10);
+            rightLabel.setAttribute('text-anchor', 'end');
+            rightLabel.setAttribute('font-size', '13');
+            rightLabel.setAttribute('font-weight', '600');
+            rightLabel.setAttribute('fill', '#495057');
+            rightLabel.textContent = 'High Commitment';
+            labelsGroup.appendChild(rightLabel);
+            
+            // Y-axis endpoint labels
+            const topLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            topLabel.setAttribute('x', centerX);
+            topLabel.setAttribute('y', margin.top - 10);
+            topLabel.setAttribute('text-anchor', 'middle');
+            topLabel.setAttribute('font-size', '13');
+            topLabel.setAttribute('font-weight', '600');
+            topLabel.setAttribute('fill', '#495057');
+            topLabel.textContent = 'High Subscription';
+            labelsGroup.appendChild(topLabel);
+            
+            const bottomLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            bottomLabel.setAttribute('x', centerX);
+            bottomLabel.setAttribute('y', margin.top + chartHeight + 20);
+            bottomLabel.setAttribute('text-anchor', 'middle');
+            bottomLabel.setAttribute('font-size', '13');
+            bottomLabel.setAttribute('font-weight', '600');
+            bottomLabel.setAttribute('fill', '#495057');
+            bottomLabel.textContent = 'Low Subscription';
+            labelsGroup.appendChild(bottomLabel);
+            
+            // Add quadrant labels
+            const quadrants = [
+                { x: centerX - chartWidth/4, y: margin.top + 30, label: 'SUSTAINERS', color: '#666' },
+                { x: centerX + chartWidth/4, y: margin.top + 30, label: 'CHAMPIONS', color: '#2e7d32' },
+                { x: centerX - chartWidth/4, y: margin.top + chartHeight - 20, label: 'NURTURES', color: '#666' },
+                { x: centerX + chartWidth/4, y: margin.top + chartHeight - 20, label: 'POTENTIALS', color: '#666' }
+            ];
+            
+            quadrants.forEach(q => {
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', q.x);
+                text.setAttribute('y', q.y);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('font-size', '11');
+                text.setAttribute('font-weight', '700');
+                text.setAttribute('fill', q.color);
+                text.setAttribute('opacity', '0.4');
+                text.setAttribute('letter-spacing', '1');
+                text.textContent = q.label;
+                labelsGroup.appendChild(text);
+            });
+            
+            // Draw bubbles
+            const bubblesGroup = svg.querySelector('.bubbles');
+            
+            bubbleData.forEach((d, i) => {
+                const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                g.setAttribute('class', 'bubble');
+                
+                // Calculate position
+                const cx = xScale(d.commitment_level);
+                const cy = yScale(d.subscription_rate);
+                
+                // Create circle
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', cx);
+                circle.setAttribute('cy', cy);
+                circle.setAttribute('r', d.radius);
+                circle.setAttribute('fill', d.color);
+                circle.setAttribute('stroke', d.color);
+                circle.setAttribute('class', 'bubble-circle');
+                g.appendChild(circle);
+                
+                // Create clipPath for image
+                const clipId = 'clip-' + d.persona.toLowerCase();
+                const clipPath = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+                clipPath.setAttribute('id', clipId);
+                
+                const clipCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                clipCircle.setAttribute('cx', cx);
+                clipCircle.setAttribute('cy', cy);
+                clipCircle.setAttribute('r', d.radius - 5);
+                clipPath.appendChild(clipCircle);
+                
+                svg.appendChild(clipPath);
+                
+                // Add image
+                const imageSize = d.radius * 1.5; // Make image 75% of bubble diameter
+                const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+                image.setAttribute('x', cx - imageSize/2);
+                image.setAttribute('y', cy - imageSize/2);
+                image.setAttribute('width', imageSize);
+                image.setAttribute('height', imageSize);
+                image.setAttribute('href', d.image);
+                image.setAttribute('clip-path', 'url(#' + clipId + ')');
+                image.setAttribute('class', 'bubble-image');
+                image.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+                
+                // Fallback for missing images - add emoji
+                image.onerror = function() {
+                    const emojis = {
+                        'Casuals': '😎',
+                        'Explorers': '🔍',
+                        'Achievers': '🏆',
+                        'Professionals': '📚'
+                    };
+                    
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    text.setAttribute('x', cx);
+                    text.setAttribute('y', cy);
+                    text.setAttribute('text-anchor', 'middle');
+                    text.setAttribute('dominant-baseline', 'middle');
+                    text.setAttribute('font-size', d.radius);
+                    text.textContent = emojis[d.persona];
+                    g.appendChild(text);
+                    
+                    this.remove();
+                };
+                
+                g.appendChild(image);
+                
+                // Add bubble with animation
+                bubblesGroup.appendChild(g);
+            });
+        }
+    </script>
+</body>
+</html>
